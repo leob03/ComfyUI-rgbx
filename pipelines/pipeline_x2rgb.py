@@ -15,7 +15,8 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     rescale_noise_cfg,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
-from diffusers.utils import CONFIG_NAME, BaseOutput, deprecate, logging, randn_tensor
+from diffusers.utils import CONFIG_NAME, BaseOutput, deprecate, logging
+from diffusers.utils.torch_utils import randn_tensor
 from packaging import version
 from transformers import CLIPTextModel, CLIPTokenizer
 

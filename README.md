@@ -16,7 +16,7 @@ Clone this repository into your ComfyUI `custom_nodes` directory:
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone <repo-url> ComfyUI-rgbx
+git clone https://github.com/leob03/ComfyUI-rgbx.git
 ```
 
 ### Dependencies
@@ -29,8 +29,6 @@ pip install diffusers>=0.20.0 transformers torchvision
 
 ## Model Setup
 
-This node uses three HuggingFace models. **If you run ComfyUI in an offline environment (e.g., Docker without internet access), you must pre-download the models.**
-
 ### Models
 
 | Pipeline | HuggingFace Model ID | Local Directory |
@@ -41,16 +39,15 @@ This node uses three HuggingFace models. **If you run ComfyUI in an offline envi
 
 ### Downloading models for offline use
 
-On a machine with internet access, run:
 
 ```bash
 # Install huggingface-hub CLI if needed
 pip install huggingface-hub
 
-# Download all three models
-huggingface-cli download zheng95z/rgb-to-x --local-dir ComfyUI/models/rgbx/rgb-to-x
-huggingface-cli download zheng95z/x-to-rgb --local-dir ComfyUI/models/rgbx/x-to-rgb
-huggingface-cli download zheng95z/x-to-rgb-inpainting --local-dir ComfyUI/models/rgbx/x-to-rgb-inpainting
+# Run these from your ComfyUI root directory (where main.py is)
+huggingface-cli download zheng95z/rgb-to-x --local-dir models/rgbx/rgb-to-x
+huggingface-cli download zheng95z/x-to-rgb --local-dir models/rgbx/x-to-rgb
+huggingface-cli download zheng95z/x-to-rgb-inpainting --local-dir models/rgbx/x-to-rgb-inpainting
 ```
 
 Or using Python:
@@ -58,18 +55,18 @@ Or using Python:
 ```python
 from huggingface_hub import snapshot_download
 
+COMFYUI_ROOT = "/path/to/ComfyUI"
+
 for model in ["rgb-to-x", "x-to-rgb", "x-to-rgb-inpainting"]:
     snapshot_download(
         repo_id=f"zheng95z/{model}",
-        local_dir=f"ComfyUI/models/rgbx/{model}",
+        local_dir=f"{COMFYUI_ROOT}/models/rgbx/{model}",
     )
 ```
 
-Then copy or DVC the `ComfyUI/models/rgbx/` directory into your Docker image.
-
 ### Model resolution behavior
 
-The node automatically looks for models in `ComfyUI/models/rgbx/<model-name>/`. If the local directory does not exist, it falls back to downloading from HuggingFace (requires internet).
+At runtime, the node looks for models in `<ComfyUI>/models/rgbx/<model-name>/` (resolved via `folder_paths.models_dir`). If the local directory does not exist, it falls back to downloading from HuggingFace.
 
 ## Node Details
 

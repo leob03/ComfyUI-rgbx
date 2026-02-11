@@ -1,0 +1,3 @@
+diffusers>=0.20.0
+transformers>=4.40.2
+packaging
