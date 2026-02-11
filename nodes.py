@@ -328,14 +328,60 @@ class X2RGBInpainting:
         return (generated, masked_photo_out, photo_vae_out)
 
 
+class CombineMetallicRoughness:
+    """Combines separate metallic and roughness image batches into a single
+    MR image batch compatible with the Hy3DBakeMultiViews node.
+
+    The output packs metallic into the red channel and roughness into the
+    green channel (blue is zeroed out), matching the convention used by
+    Hunyuan 3D 2.1.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "metallic": ("IMAGE",),
+                "roughness": ("IMAGE",),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("mr",)
+    FUNCTION = "combine"
+    CATEGORY = "rgbx"
+
+    def combine(self, metallic, roughness):
+        # metallic / roughness: [B, H, W, C] float32 tensors in [0, 1]
+        # If the inputs are RGB, take just the first channel (grayscale value).
+        if metallic.shape[-1] >= 3:
+            m = metallic[..., 0:1]
+        else:
+            m = metallic
+
+        if roughness.shape[-1] >= 3:
+            r = roughness[..., 0:1]
+        else:
+            r = roughness
+
+        b = torch.zeros_like(m)
+
+        # Pack: R=metallic, G=roughness, B=0
+        mr = torch.cat([m, r, b], dim=-1)
+
+        return (mr,)
+
+
 NODE_CLASS_MAPPINGS = {
     "RGB2X": RGB2X,
     "X2RGB": X2RGB,
     "X2RGBInpainting": X2RGBInpainting,
+    "CombineMetallicRoughness": CombineMetallicRoughness,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "RGB2X": "RGB -> X (Intrinsic Decomposition)",
     "X2RGB": "X -> RGB (Material to Photo)",
     "X2RGBInpainting": "X -> RGB Inpainting",
+    "CombineMetallicRoughness": "Combine Metallic + Roughness to MR",
 }
