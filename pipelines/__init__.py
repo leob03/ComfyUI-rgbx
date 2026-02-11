@@ -1,0 +1,3 @@
+from .pipeline_rgb2x import StableDiffusionAOVMatEstPipeline
+from .pipeline_x2rgb import StableDiffusionAOVDropoutPipeline as X2RGBPipeline
+from .pipeline_x2rgb_inpainting import StableDiffusionAOVDropoutPipeline as X2RGBInpaintingPipeline

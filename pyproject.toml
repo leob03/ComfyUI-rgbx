@@ -1,0 +1,21 @@
+[project]
+name = "comfyui-rgbx"
+description = "ComfyUI nodes for RGB-X: Image decomposition and generation using intrinsic channels (albedo, normal, roughness, metallic, irradiance)"
+version = "1.0.0"
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = [
+    "torch",
+    "torchvision",
+    "diffusers>=0.20.0",
+    "transformers",
+    "numpy",
+]
+
+[project.urls]
+Repository = "https://github.com/zheng95z/rgbx"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI RGB-X"
+Icon = ""
