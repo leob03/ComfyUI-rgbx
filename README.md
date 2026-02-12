@@ -2,6 +2,9 @@
 
 ComfyUI nodes for [RGB-X](https://github.com/zheng95z/rgbx) — image decomposition and generation using intrinsic channels.
 
+> **Difference with [ComfyUI_rgbx_Wrapper](https://github.com/zheng95z/ComfyUI_rgbx_Wrapper)?**
+> The original wrapper only exposed 1 of the 3 RGB-X pipelines (older version of the init repo that has been updated since).
+
 Provides three nodes:
 
 | Node | Description |
