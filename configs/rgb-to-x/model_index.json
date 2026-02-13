@@ -1,0 +1,25 @@
+{
+  "_class_name": "StableDiffusionAOVMatEstPipeline",
+  "_diffusers_version": "0.20.2",
+  "_name_or_path": "./models/stable-diffusion-2-1",
+  "scheduler": [
+    "diffusers",
+    "DDIMScheduler"
+  ],
+  "text_encoder": [
+    "transformers",
+    "CLIPTextModel"
+  ],
+  "tokenizer": [
+    "transformers",
+    "CLIPTokenizer"
+  ],
+  "unet": [
+    "diffusers",
+    "UNet2DConditionModel"
+  ],
+  "vae": [
+    "diffusers",
+    "AutoencoderKL"
+  ]
+}

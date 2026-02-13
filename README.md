@@ -40,36 +40,34 @@ pip install diffusers>=0.20.0 transformers torchvision
 | X -> RGB | `zheng95z/x-to-rgb` | `ComfyUI/models/rgbx/x-to-rgb/` |
 | X -> RGB Inpainting | `zheng95z/x-to-rgb-inpainting` | `ComfyUI/models/rgbx/x-to-rgb-inpainting/` |
 
-### Downloading models for offline use
+Config files (model_index.json, scheduler configs, tokenizer vocab, etc.) are bundled in this repo under `configs/`. Only the large `.safetensors` weight files need to be placed in the model directories.
 
+### Downloading weights for offline use
+
+Only the `.safetensors` weight files are needed. The directory structure should look like:
+
+```
+ComfyUI/models/rgbx/rgb-to-x/
+  text_encoder/model.safetensors
+  unet/diffusion_pytorch_model.safetensors
+  vae/diffusion_pytorch_model.safetensors
+```
 
 ```bash
 # Install huggingface-hub CLI if needed
 pip install huggingface-hub
 
-# Run these from your ComfyUI root directory (where main.py is)
-huggingface-cli download zheng95z/rgb-to-x --local-dir models/rgbx/rgb-to-x
-huggingface-cli download zheng95z/x-to-rgb --local-dir models/rgbx/x-to-rgb
-huggingface-cli download zheng95z/x-to-rgb-inpainting --local-dir models/rgbx/x-to-rgb-inpainting
+# Download only safetensors files from your ComfyUI root directory
+huggingface-cli download zheng95z/rgb-to-x --include "*.safetensors" --local-dir models/rgbx/rgb-to-x
+huggingface-cli download zheng95z/x-to-rgb --include "*.safetensors" --local-dir models/rgbx/x-to-rgb
+huggingface-cli download zheng95z/x-to-rgb-inpainting --include "*.safetensors" --local-dir models/rgbx/x-to-rgb-inpainting
 ```
 
-Or using Python:
-
-```python
-from huggingface_hub import snapshot_download
-
-COMFYUI_ROOT = "/path/to/ComfyUI"
-
-for model in ["rgb-to-x", "x-to-rgb", "x-to-rgb-inpainting"]:
-    snapshot_download(
-        repo_id=f"zheng95z/{model}",
-        local_dir=f"{COMFYUI_ROOT}/models/rgbx/{model}",
-    )
-```
+Alternatively, downloading the full repo (configs + weights) still works — the node detects the layout automatically.
 
 ### Model resolution behavior
 
-At runtime, the node looks for models in `<ComfyUI>/models/rgbx/<model-name>/` (resolved via `folder_paths.models_dir`). If the local directory does not exist, it falls back to downloading from HuggingFace.
+At runtime, the node looks for weights in `<ComfyUI>/models/rgbx/<model-name>/`. If `model_index.json` is present in that directory (full HuggingFace layout), it is used directly. Otherwise, the node merges the bundled configs with the weight files via symlinks into a staging directory (`_staged/`). If the local directory does not exist at all, it falls back to downloading from HuggingFace.
 
 ## Node Details
 

@@ -9,5 +9,6 @@ build/
 .venv/
 venv/
 model_cache/
+_staged/
 CLAUDE.md
 .vscode/

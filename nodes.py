@@ -14,6 +14,11 @@ from .pipelines import (
     X2RGBPipeline,
 )
 
+# Paths
+_CUSTOM_NODE_DIR = os.path.dirname(os.path.abspath(__file__))
+_CONFIGS_DIR = os.path.join(_CUSTOM_NODE_DIR, "configs")
+_STAGED_DIR = os.path.join(_CUSTOM_NODE_DIR, "_staged")
+
 # Register model directory under ComfyUI/models/rgbx/
 RGBX_MODELS_DIR = os.path.join(folder_paths.models_dir, "rgbx")
 os.makedirs(RGBX_MODELS_DIR, exist_ok=True)
@@ -35,10 +40,61 @@ PIPELINE_CLASSES = {
 _pipeline_cache = {}
 
 
+def _stage_model(model_name):
+    """Build a staging directory that merges repo configs with model weights via symlinks.
+
+    Returns the path to the staged directory ready for from_pretrained().
+    """
+    config_dir = os.path.join(_CONFIGS_DIR, model_name)
+    weights_dir = os.path.join(RGBX_MODELS_DIR, model_name)
+    staged_dir = os.path.join(_STAGED_DIR, model_name)
+
+    os.makedirs(staged_dir, exist_ok=True)
+
+    # Symlink config files from the repo
+    for dirpath, _, filenames in os.walk(config_dir):
+        rel_dir = os.path.relpath(dirpath, config_dir)
+        target_dir = os.path.join(staged_dir, rel_dir) if rel_dir != "." else staged_dir
+        os.makedirs(target_dir, exist_ok=True)
+        for fname in filenames:
+            src = os.path.join(dirpath, fname)
+            dst = os.path.join(target_dir, fname)
+            if not os.path.exists(dst):
+                os.symlink(src, dst)
+
+    # Symlink weight files from the models directory
+    for dirpath, _, filenames in os.walk(weights_dir):
+        rel_dir = os.path.relpath(dirpath, weights_dir)
+        target_dir = os.path.join(staged_dir, rel_dir) if rel_dir != "." else staged_dir
+        os.makedirs(target_dir, exist_ok=True)
+        for fname in filenames:
+            if fname.endswith(".safetensors"):
+                src = os.path.join(dirpath, fname)
+                dst = os.path.join(target_dir, fname)
+                if not os.path.exists(dst):
+                    os.symlink(src, dst)
+
+    return staged_dir
+
+
 def get_model_path(model_name):
-    """Return local path if model is pre-downloaded, otherwise HuggingFace ID."""
+    """Return the path to load the model from.
+
+    Supports three layouts:
+    1. Full layout (model_index.json in weights dir) — use directly
+    2. Weights-only layout (configs in repo, weights in models dir) — stage via symlinks
+    3. Fallback to HuggingFace ID (requires internet)
+    """
     local_path = os.path.join(RGBX_MODELS_DIR, model_name)
     if os.path.isdir(local_path):
+        if os.path.isfile(os.path.join(local_path, "model_index.json")):
+            # Full layout — use as-is (backwards compatible)
+            return local_path
+        # Weights-only layout — check if we have configs in the repo
+        config_dir = os.path.join(_CONFIGS_DIR, model_name)
+        if os.path.isdir(config_dir):
+            return _stage_model(model_name)
+        # No configs available — try using the directory anyway
         return local_path
     # Fallback to HuggingFace ID (requires internet)
     return f"zheng95z/{model_name}"
